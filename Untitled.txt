@@ -1,0 +1,1307 @@
+--============================================================
+-- CATNAP HUB // BOBLOUI TEST
+--============================================================
+
+local BobloUI = loadstring(game:HttpGet(
+    "https://raw.githubusercontent.com/bobloscript/BobloUI/main/dist/BobloUI.min.lua"
+))()
+
+--============================================================
+-- SERVICES
+--============================================================
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local Stats = game:GetService("Stats")
+local Lighting = game:GetService("Lighting")
+
+local Player = Players.LocalPlayer
+
+--============================================================
+-- CONFIG
+--============================================================
+
+local Config = {
+    Title = "CATNAP HUB",
+    Version = "TEST 1.0",
+    Accent = Color3.fromRGB(145, 105, 255),
+
+    WalkSpeed = 16,
+    JumpPower = 50,
+
+    Fullbright = false,
+    Notifications = true,
+}
+
+--============================================================
+-- HELPERS
+--============================================================
+
+local function notify(title, text, variant)
+    if not Config.Notifications then
+        return
+    end
+
+    pcall(function()
+        UI.Notify:Push({
+            Title = title,
+            Content = text,
+            Variant = variant or "Info",
+            Duration = 3,
+        })
+    end)
+end
+
+local function getPing()
+    local success, result = pcall(function()
+        return Stats.Network.ServerStatsItem
+            ["Data Ping"]
+            :GetValue()
+    end)
+
+    if success then
+        return math.floor(result)
+    end
+
+    return 0
+end
+
+--============================================================
+-- WINDOW
+--============================================================
+
+local UI = BobloUI:CreateWindow({
+    Id = "catnap-test",
+    Title = Config.Title,
+
+    Icon = "moon",
+
+    Theme = "Dark",
+
+    FooterText =
+        "CATNAP HUB · " .. Config.Version,
+
+    ConfigFolder = "CatnapHub",
+
+    AutoLoad = true,
+
+    ShowMobileButtons = true,
+
+    EnableCompacting = true,
+
+    GlobalSearch = true,
+
+    SearchbarSize = "Medium",
+
+    SidebarCollapseThreshold = 700,
+
+    CompactWidthActivation = 1100,
+
+    TabTransitionTime = 0.18,
+
+    TabSwipeOffset = 80,
+
+    TabSwipeFrom = "Any",
+})
+
+--============================================================
+-- WINDOW SETTINGS
+--============================================================
+
+pcall(function()
+    UI:SetAccent(Config.Accent)
+
+    UI:SetDensity("Comfortable")
+
+    UI:SetScale(1)
+
+    UI:SetWindowOpacity(0.96)
+
+    UI:SetNotificationPosition("TopRight")
+
+    UI:SetKeybindHUD(true)
+
+    UI:SetWatermark(
+        "CATNAP HUB · TEST"
+    )
+end)
+
+--============================================================
+-- DASHBOARD
+--============================================================
+
+local Dashboard = UI:AddTab({
+    Id = "dashboard",
+    Title = "Dashboard",
+    Icon = "layout-dashboard",
+    Group = "MAIN",
+})
+
+local Overview = Dashboard:AddSection({
+    Title = "Overview",
+    Icon = "activity",
+    Span = "Auto",
+    Layout = "Grid",
+})
+
+Overview:AddStatus({
+    Id = "Status",
+    Title = "Status",
+    Description = "Current interface state",
+    Text = "ONLINE",
+    Variant = "Success",
+})
+
+Overview:AddStatus({
+    Id = "Username",
+    Title = "User",
+    Description = "LocalPlayer",
+    Text = Player.Name,
+    Variant = "Info",
+})
+
+Overview:AddStatus({
+    Id = "Ping",
+    Title = "Ping",
+    Description = "Server latency",
+    Text = "0 ms",
+    Variant = "Info",
+})
+
+Overview:AddStatus({
+    Id = "Device",
+    Title = "Device",
+    Description = "Current device class",
+    Text = "Detecting...",
+    Variant = "Info",
+})
+
+--============================================================
+-- DASHBOARD BUTTONS
+--============================================================
+
+local Actions = Dashboard:AddSection({
+    Title = "Quick Actions",
+    Icon = "zap",
+    Span = "Auto",
+    Layout = "Grid",
+})
+
+Actions:AddButton({
+    Title = "Notification",
+    Description = "Test notification system",
+    Icon = "bell",
+    Callback = function()
+        notify(
+            "CATNAP HUB",
+            "Notification system works.",
+            "Success"
+        )
+    end,
+})
+
+Actions:AddButton({
+    Title = "Settings",
+    Description = "Open BobloUI settings",
+    Icon = "settings",
+    Callback = function()
+        pcall(function()
+            UI:OpenSettings()
+        end)
+    end,
+})
+
+Actions:AddButton({
+    Title = "Search",
+    Description = "Open global search",
+    Icon = "search",
+    Callback = function()
+        pcall(function()
+            UI:OpenSearch()
+        end)
+    end,
+})
+
+Actions:AddButton({
+    Title = "Commands",
+    Description = "Open command palette",
+    Icon = "terminal",
+    Callback = function()
+        pcall(function()
+            UI:OpenCommands()
+        end)
+    end,
+})
+
+--============================================================
+-- TEST CONTROLS
+--============================================================
+
+local TestControls = Dashboard:AddSection({
+    Title = "Test Controls",
+    Icon = "sliders-horizontal",
+    Span = "Auto",
+    Layout = "Stack",
+})
+
+TestControls:AddToggle({
+    Id = "Notifications",
+    Title = "Notifications",
+    Description = "Enable interface notifications",
+    Default = true,
+
+    Callback = function(value)
+        Config.Notifications = value
+    end,
+})
+
+TestControls:AddSlider({
+    Id = "TestSlider",
+    Title = "Test slider",
+    Description = "Demonstration slider",
+    Min = 0,
+    Max = 100,
+    Default = 50,
+    Step = 1,
+
+    Callback = function(value)
+        print(
+            "[CATNAP] Slider:",
+            value
+        )
+    end,
+})
+
+TestControls:AddDropdown({
+    Id = "TestDropdown",
+    Title = "Test dropdown",
+    Description = "Choose a test mode",
+
+    Options = {
+        "Balanced",
+        "Performance",
+        "Quality",
+        "Extreme",
+    },
+
+    Default = "Balanced",
+
+    Callback = function(value)
+        notify(
+            "Mode",
+            "Selected: " .. tostring(value),
+            "Info"
+        )
+    end,
+})
+
+TestControls:AddColorPicker({
+    Id = "Accent",
+    Title = "Accent color",
+    Description = "Change interface accent",
+
+    Default = Config.Accent,
+
+    Callback = function(value)
+        Config.Accent = value
+
+        pcall(function()
+            UI:SetAccent(value)
+        end)
+    end,
+})
+
+--============================================================
+-- AUTOMATION
+--============================================================
+
+local Automation = UI:AddTab({
+    Id = "automation",
+    Title = "Automation",
+    Icon = "bot",
+    Group = "TOOLS",
+})
+
+local AutomationSection = Automation:AddSection({
+    Title = "Automation",
+    Icon = "wand-sparkles",
+    Span = "Auto",
+    Layout = "Stack",
+})
+
+local AutomationEnabled = false
+
+AutomationSection:AddToggle({
+    Id = "AutomationEnabled",
+    Title = "Enable automation",
+    Description = "Demonstration master switch",
+    Default = false,
+
+    Callback = function(value)
+        AutomationEnabled = value
+
+        if value then
+            notify(
+                "Automation",
+                "Automation enabled.",
+                "Success"
+            )
+        else
+            notify(
+                "Automation",
+                "Automation disabled.",
+                "Warning"
+            )
+        end
+    end,
+})
+
+AutomationSection:AddSlider({
+    Id = "AutomationInterval",
+    Title = "Interval",
+    Description = "Automation interval",
+    Min = 1,
+    Max = 30,
+    Default = 5,
+    Step = 1,
+})
+
+AutomationSection:AddDropdown({
+    Id = "AutomationMode",
+    Title = "Mode",
+
+    Options = {
+        "Balanced",
+        "Fast",
+        "Safe",
+        "Manual",
+    },
+
+    Default = "Balanced",
+})
+
+AutomationSection:AddProgress({
+    Id = "AutomationProgress",
+    Title = "Progress",
+    Description = "Current automation cycle",
+    Default = 0,
+})
+
+AutomationSection:AddStatus({
+    Id = "AutomationStatus",
+    Title = "State",
+    Description = "Current automation state",
+    Text = "IDLE",
+    Variant = "Info",
+})
+
+AutomationSection:AddButton({
+    Title = "Run test cycle",
+    Icon = "play",
+    Callback = function()
+
+        task.spawn(function()
+
+            pcall(function()
+                UI.State:Set(
+                    "AutomationStatus",
+                    "RUNNING"
+                )
+
+                for i = 0, 100, 5 do
+
+                    UI.State:Set(
+                        "AutomationProgress",
+                        i
+                    )
+
+                    task.wait(0.05)
+                end
+
+                UI.State:Set(
+                    "AutomationStatus",
+                    "COMPLETED"
+                )
+
+                notify(
+                    "Automation",
+                    "Test cycle completed.",
+                    "Success"
+                )
+
+                task.wait(1)
+
+                UI.State:Set(
+                    "AutomationProgress",
+                    0
+                )
+
+                UI.State:Set(
+                    "AutomationStatus",
+                    "IDLE"
+                )
+            end)
+
+        end)
+    end,
+})
+
+--============================================================
+-- PLAYER
+--============================================================
+
+local PlayerTab = UI:AddTab({
+    Id = "player",
+    Title = "Player",
+    Icon = "user",
+    Group = "PLAYER",
+})
+
+local Movement = PlayerTab:AddSection({
+    Title = "Movement",
+    Icon = "move",
+    Span = "Auto",
+    Layout = "Stack",
+})
+
+Movement:AddSlider({
+    Id = "WalkSpeed",
+    Title = "Walk speed",
+    Description = "Player movement speed",
+    Min = 8,
+    Max = 100,
+    Default = 16,
+    Step = 1,
+
+    Callback = function(value)
+        Config.WalkSpeed = value
+
+        local character =
+            Player.Character
+
+        if not character then
+            return
+        end
+
+        local humanoid =
+            character:FindFirstChildOfClass(
+                "Humanoid"
+            )
+
+        if humanoid then
+            humanoid.WalkSpeed = value
+        end
+    end,
+})
+
+Movement:AddSlider({
+    Id = "JumpPower",
+    Title = "Jump power",
+    Description = "Player jump power",
+    Min = 25,
+    Max = 150,
+    Default = 50,
+    Step = 5,
+
+    Callback = function(value)
+        Config.JumpPower = value
+
+        local character =
+            Player.Character
+
+        if not character then
+            return
+        end
+
+        local humanoid =
+            character:FindFirstChildOfClass(
+                "Humanoid"
+            )
+
+        if humanoid then
+            humanoid.JumpPower = value
+        end
+    end,
+})
+
+Movement:AddToggle({
+    Id = "Sprint",
+    Title = "Sprint",
+    Description = "Temporary sprint state",
+    Default = false,
+
+    Callback = function(value)
+
+        local character =
+            Player.Character
+
+        if not character then
+            return
+        end
+
+        local humanoid =
+            character:FindFirstChildOfClass(
+                "Humanoid"
+            )
+
+        if not humanoid then
+            return
+        end
+
+        if value then
+            humanoid.WalkSpeed =
+                Config.WalkSpeed * 1.5
+        else
+            humanoid.WalkSpeed =
+                Config.WalkSpeed
+        end
+    end,
+})
+
+Movement:AddKeybind({
+    Id = "SprintKey",
+    Title = "Sprint key",
+    Description = "Keyboard shortcut",
+    Default = Enum.KeyCode.LeftShift,
+    Mobile = true,
+    MobileText = "Sprint",
+})
+
+--============================================================
+-- PLAYER INFORMATION
+--============================================================
+
+local PlayerInfo = PlayerTab:AddSection({
+    Title = "Information",
+    Icon = "id-card",
+    Span = "Auto",
+    Layout = "Grid",
+})
+
+PlayerInfo:AddStatus({
+    Id = "InfoUsername",
+    Title = "Username",
+    Text = Player.Name,
+    Variant = "Info",
+})
+
+PlayerInfo:AddStatus({
+    Id = "InfoDisplay",
+    Title = "Display name",
+    Text = Player.DisplayName,
+    Variant = "Info",
+})
+
+PlayerInfo:AddStatus({
+    Id = "InfoUserId",
+    Title = "User ID",
+    Text = tostring(Player.UserId),
+    Variant = "Info",
+})
+
+PlayerInfo:AddStatus({
+    Id = "InfoAccountAge",
+    Title = "Account age",
+    Text =
+        tostring(Player.AccountAge)
+        .. " days",
+    Variant = "Info",
+})
+
+--============================================================
+-- VISUALS
+--============================================================
+
+local Visuals = UI:AddTab({
+    Id = "visuals",
+    Title = "Visuals",
+    Icon = "eye",
+    Group = "PLAYER",
+})
+
+local VisualSection = Visuals:AddSection({
+    Title = "Visual Settings",
+    Icon = "scan-eye",
+    Span = "Auto",
+    Layout = "Stack",
+})
+
+VisualSection:AddToggle({
+    Id = "ESP",
+    Title = "ESP",
+    Description = "Visual framework test",
+    Default = false,
+
+    Callback = function(value)
+        notify(
+            "Visuals",
+            value
+                and "ESP enabled."
+                or "ESP disabled.",
+            value and "Success" or "Warning"
+        )
+    end,
+})
+
+VisualSection:AddDropdown({
+    Id = "ESPMode",
+    Title = "ESP mode",
+
+    Options = {
+        "Classic",
+        "Outline",
+        "Minimal",
+        "Advanced",
+    },
+
+    Default = "Classic",
+})
+
+VisualSection:AddSlider({
+    Id = "ESPDistance",
+    Title = "Distance",
+    Description = "Visual range",
+    Min = 25,
+    Max = 1000,
+    Default = 250,
+    Step = 25,
+})
+
+VisualSection:AddColorPicker({
+    Id = "ESPColor",
+    Title = "ESP color",
+    Default = Config.Accent,
+})
+
+--============================================================
+-- WORLD
+--============================================================
+
+local World = UI:AddTab({
+    Id = "world",
+    Title = "World",
+    Icon = "globe",
+    Group = "WORLD",
+})
+
+local LightingSection = World:AddSection({
+    Title = "Lighting",
+    Icon = "sun",
+    Span = "Auto",
+    Layout = "Stack",
+})
+
+LightingSection:AddToggle({
+    Id = "Fullbright",
+    Title = "Fullbright",
+    Description = "Test lighting override",
+    Default = false,
+
+    Callback = function(value)
+
+        Config.Fullbright = value
+
+        if value then
+            Lighting.Brightness = 2
+            Lighting.ClockTime = 14
+            Lighting.GlobalShadows = false
+        else
+            Lighting.Brightness = 1
+            Lighting.GlobalShadows = true
+        end
+    end,
+})
+
+LightingSection:AddSlider({
+    Id = "Brightness",
+    Title = "Brightness",
+    Min = 0,
+    Max = 10,
+    Default = 2,
+    Step = 0.1,
+
+    Callback = function(value)
+        if not Config.Fullbright then
+            Lighting.Brightness = value
+        end
+    end,
+})
+
+LightingSection:AddSlider({
+    Id = "ClockTime",
+    Title = "Clock time",
+    Min = 0,
+    Max = 24,
+    Default = 14,
+    Step = 0.25,
+
+    Callback = function(value)
+        Lighting.ClockTime = value
+    end,
+})
+
+LightingSection:AddToggle({
+    Id = "Shadows",
+    Title = "Global shadows",
+    Default = true,
+
+    Callback = function(value)
+        if not Config.Fullbright then
+            Lighting.GlobalShadows = value
+        end
+    end,
+})
+
+--============================================================
+-- THEME
+--============================================================
+
+local Theme = UI:AddTab({
+    Id = "theme",
+    Title = "Theme",
+    Icon = "palette",
+    Group = "SYSTEM",
+})
+
+local ThemeSection = Theme:AddSection({
+    Title = "Appearance",
+    Icon = "paintbrush",
+    Span = "Auto",
+    Layout = "Stack",
+})
+
+ThemeSection:AddDropdown({
+    Id = "Theme",
+    Title = "Theme",
+
+    Options = {
+        "Dark",
+        "Light",
+    },
+
+    Default = "Dark",
+
+    Callback = function(value)
+
+        pcall(function()
+            UI:SetTheme(value)
+        end)
+
+    end,
+})
+
+ThemeSection:AddColorPicker({
+    Id = "ThemeAccent",
+    Title = "Accent",
+    Default = Config.Accent,
+
+    Callback = function(value)
+
+        Config.Accent = value
+
+        pcall(function()
+            UI:SetAccent(value)
+        end)
+
+    end,
+})
+
+ThemeSection:AddSlider({
+    Id = "UIScale",
+    Title = "UI scale",
+    Description = "Interface scale",
+    Min = 0.8,
+    Max = 1.3,
+    Default = 1,
+    Step = 0.05,
+
+    Callback = function(value)
+
+        pcall(function()
+            UI:SetScale(value)
+        end)
+
+    end,
+})
+
+ThemeSection:AddDropdown({
+    Id = "Density",
+    Title = "Density",
+
+    Options = {
+        "Comfortable",
+        "Compact",
+        "Dense",
+    },
+
+    Default = "Comfortable",
+
+    Callback = function(value)
+
+        pcall(function()
+            UI:SetDensity(value)
+        end)
+
+    end,
+})
+
+--============================================================
+-- ACCESSIBILITY
+--============================================================
+
+local Accessibility = Theme:AddSection({
+    Title = "Accessibility",
+    Icon = "accessibility",
+    Span = "Auto",
+    Layout = "Stack",
+})
+
+Accessibility:AddToggle({
+    Id = "ReducedMotion",
+    Title = "Reduced motion",
+    Description = "Reduce UI animation",
+    Default = false,
+
+    Callback = function(value)
+
+        pcall(function()
+            UI:SetReducedMotion(value)
+        end)
+
+    end,
+})
+
+Accessibility:AddToggle({
+    Id = "HighContrast",
+    Title = "High contrast",
+    Description = "Increase interface contrast",
+    Default = false,
+
+    Callback = function(value)
+
+        pcall(function()
+            UI:SetHighContrast(value)
+        end)
+
+    end,
+})
+
+--============================================================
+-- RESPONSIVE
+--============================================================
+
+local Responsive = UI:AddTab({
+    Id = "responsive",
+    Title = "Responsive",
+    Icon = "smartphone",
+    Group = "SYSTEM",
+})
+
+local DeviceSection = Responsive:AddSection({
+    Title = "Device",
+    Icon = "monitor-smartphone",
+    Span = "Auto",
+    Layout = "Grid",
+})
+
+DeviceSection:AddStatus({
+    Id = "DeviceClass",
+    Title = "Class",
+    Description = "BobloUI device classification",
+    Text = "Detecting...",
+    Variant = "Info",
+})
+
+DeviceSection:AddStatus({
+    Id = "DeviceLayout",
+    Title = "Layout",
+    Description = "Current adaptive layout",
+    Text = "Detecting...",
+    Variant = "Info",
+})
+
+DeviceSection:AddStatus({
+    Id = "Touch",
+    Title = "Touch",
+    Description = "Touch input",
+    Text =
+        UserInputService.TouchEnabled
+        and "AVAILABLE"
+        or "NONE",
+    Variant =
+        UserInputService.TouchEnabled
+        and "Success"
+        or "Info",
+})
+
+DeviceSection:AddStatus({
+    Id = "Keyboard",
+    Title = "Keyboard",
+    Description = "Keyboard input",
+    Text =
+        UserInputService.KeyboardEnabled
+        and "AVAILABLE"
+        or "NONE",
+    Variant =
+        UserInputService.KeyboardEnabled
+        and "Success"
+        or "Info",
+})
+
+--============================================================
+-- RESPONSIVE TEST
+--============================================================
+
+local ResponsiveTest = Responsive:AddSection({
+    Title = "Layout Test",
+    Icon = "move-diagonal",
+    Span = "Auto",
+    Layout = "Grid",
+})
+
+ResponsiveTest:AddButton({
+    Title = "Compact",
+    Icon = "panel-left-close",
+
+    Callback = function()
+
+        pcall(function()
+            UI:SetCompact(true)
+        end)
+
+    end,
+})
+
+ResponsiveTest:AddButton({
+    Title = "Expanded",
+    Icon = "panel-left-open",
+
+    Callback = function()
+
+        pcall(function()
+            UI:SetCompact(false)
+        end)
+
+    end,
+})
+
+ResponsiveTest:AddButton({
+    Title = "Scale 90%",
+    Icon = "zoom-out",
+
+    Callback = function()
+
+        pcall(function()
+            UI:SetScale(0.9)
+        end)
+
+    end,
+})
+
+ResponsiveTest:AddButton({
+    Title = "Scale 110%",
+    Icon = "zoom-in",
+
+    Callback = function()
+
+        pcall(function()
+            UI:SetScale(1.1)
+        end)
+
+    end,
+})
+
+--============================================================
+-- UTILITY
+--============================================================
+
+local Utility = UI:AddTab({
+    Id = "utility",
+    Title = "Utility",
+    Icon = "wrench",
+    Group = "TOOLS",
+})
+
+local UtilitySection = Utility:AddSection({
+    Title = "Tools",
+    Icon = "tool-case",
+    Span = "Auto",
+    Layout = "Grid",
+})
+
+UtilitySection:AddButton({
+    Title = "Save Config",
+    Icon = "save",
+
+    Callback = function()
+
+        pcall(function()
+            UI.Config:Save("Default")
+
+            notify(
+                "Config",
+                "Configuration saved.",
+                "Success"
+            )
+        end)
+
+    end,
+})
+
+UtilitySection:AddButton({
+    Title = "Load Config",
+    Icon = "folder-open",
+
+    Callback = function()
+
+        pcall(function()
+            UI.Config:Load("Default")
+
+            notify(
+                "Config",
+                "Configuration loaded.",
+                "Info"
+            )
+        end)
+
+    end,
+})
+
+UtilitySection:AddButton({
+    Title = "Reset State",
+    Icon = "rotate-ccw",
+
+    Callback = function()
+
+        pcall(function()
+            UI.State:Reset()
+
+            notify(
+                "State",
+                "Interface state reset.",
+                "Warning"
+            )
+        end)
+
+    end,
+})
+
+UtilitySection:AddButton({
+    Title = "Test Command",
+    Icon = "terminal",
+
+    Callback = function()
+
+        notify(
+            "Command",
+            "Command system is working.",
+            "Success"
+        )
+
+    end,
+})
+
+--============================================================
+-- INPUT TEST
+--============================================================
+
+local InputSection = Utility:AddSection({
+    Title = "Input Test",
+    Icon = "keyboard",
+    Span = "Auto",
+    Layout = "Stack",
+})
+
+InputSection:AddInput({
+    Id = "Message",
+    Title = "Message",
+    Description = "Custom notification text",
+    Placeholder = "Write something...",
+    Default = "Hello from CATNAP HUB",
+})
+
+InputSection:AddDropdown({
+    Id = "MessageType",
+    Title = "Type",
+
+    Options = {
+        "Info",
+        "Success",
+        "Warning",
+        "Danger",
+    },
+
+    Default = "Info",
+})
+
+InputSection:AddButton({
+    Title = "Send message",
+    Icon = "send",
+
+    Callback = function()
+
+        local message = "Hello"
+
+        pcall(function()
+            message =
+                UI.State:Get("Message")
+        end)
+
+        local variant = "Info"
+
+        pcall(function()
+            variant =
+                UI.State:Get("MessageType")
+        end)
+
+        notify(
+            "Custom Message",
+            tostring(message),
+            variant
+        )
+    end,
+})
+
+--============================================================
+-- LIVE DEVICE UPDATE
+--============================================================
+
+local lastViewport = ""
+
+RunService.RenderStepped:Connect(function()
+
+    local camera =
+        workspace.CurrentCamera
+
+    if not camera then
+        return
+    end
+
+    local viewport =
+        camera.ViewportSize
+
+    local viewportKey =
+        tostring(
+            math.floor(viewport.X)
+        )
+        .. "x"
+        .. tostring(
+            math.floor(viewport.Y)
+        )
+
+    if viewportKey ~= lastViewport then
+
+        lastViewport = viewportKey
+
+        pcall(function()
+
+            if UI.Device then
+
+                if UI.Device.Class then
+                    UI.State:Set(
+                        "DeviceClass",
+                        tostring(
+                            UI.Device.Class
+                        )
+                    )
+                end
+
+                if UI.Device.Layout then
+                    UI.State:Set(
+                        "DeviceLayout",
+                        tostring(
+                            UI.Device.Layout
+                        )
+                    )
+                end
+
+            end
+
+        end)
+
+    end
+
+end)
+
+--============================================================
+-- LIVE PING
+--============================================================
+
+task.spawn(function()
+
+    while true do
+
+        task.wait(1)
+
+        local ping =
+            getPing()
+
+        pcall(function()
+
+            UI.State:Set(
+                "Ping",
+                tostring(ping) .. " ms"
+            )
+
+        end)
+
+    end
+
+end)
+
+--============================================================
+-- CHARACTER RESET SUPPORT
+--============================================================
+
+Player.CharacterAdded:Connect(function()
+
+    task.wait(0.5)
+
+    local character =
+        Player.Character
+
+    if not character then
+        return
+    end
+
+    local humanoid =
+        character:FindFirstChildOfClass(
+            "Humanoid"
+        )
+
+    if not humanoid then
+        return
+    end
+
+    humanoid.WalkSpeed =
+        Config.WalkSpeed
+
+    humanoid.JumpPower =
+        Config.JumpPower
+
+end)
+
+--============================================================
+-- STARTUP
+--============================================================
+
+task.wait(0.5)
+
+notify(
+    "CATNAP HUB",
+    "BobloUI test interface loaded.",
+    "Success"
+)
+
+task.wait(0.5)
+
+notify(
+    "Responsive",
+    "Resize the Roblox window or rotate the device to test the layout.",
+    "Info"
+)
+
+print(
+    "[CATNAP HUB] BobloUI test loaded."
+)
